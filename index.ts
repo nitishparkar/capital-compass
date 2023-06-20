@@ -19,9 +19,9 @@ app.post('/upload-deck', upload.single('deck'), async (req: Request, res: Respon
   }
 
   parsePDF(req.file.path)
-    .then(() => {
+    .then((content) => {
       // Send a response
-      res.json({ message: 'PDF uploaded and parsed successfully' });
+      res.json({ message: 'PDF uploaded and parsed successfully', content: content });
     })
     .catch((error) => {
       // Handle any errors that occurred during parsing
