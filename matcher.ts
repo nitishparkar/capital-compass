@@ -15,7 +15,7 @@ export async function matchInvestor(summary: string) {
   const namespace = 'dev-namespace';
 
   const vectorStore = await PineconeStore.fromExistingIndex(
-    new OpenAIEmbeddings(),
+    new OpenAIEmbeddings({ modelName: 'text-embedding-ada-002' }),
     { pineconeIndex, namespace }
   );
 
@@ -26,7 +26,7 @@ export async function matchInvestor(summary: string) {
     console.log(pc);
   });
 
-  const model = new OpenAI({ modelName: 'gpt-3.5-turbo' });
+  const model = new OpenAI({ modelName: 'gpt-3.5-turbo', temperature: 0.1 });
   const promptA = new PromptTemplate({ template: MATCHMAKER_TEMPLATE, inputVariables: ['startupInfo', 'investors'] });
   const prompt = await promptA.format({ startupInfo: summary, investors: results.map(doc => doc.pageContent).join('\n') });
   console.log('prompt:\n' + prompt);

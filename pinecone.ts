@@ -42,7 +42,7 @@ export async function testPinecone() {
   console.log('Data inserted!');
 
   const vectorStore = await PineconeStore.fromExistingIndex(
-    new OpenAIEmbeddings(),
+    new OpenAIEmbeddings({ modelName: 'text-embedding-ada-002' }),
     { pineconeIndex, namespace }
   );
   /* Search the vector DB independently with meta filters */
@@ -52,7 +52,7 @@ export async function testPinecone() {
   console.log('Similarity Search with Metadata Results:');
   console.log(results);
 
-  const model = new OpenAI();
+  const model = new OpenAI({ modelName: 'gpt-3.5-turbo', temperature: 0.1 });
   const chain = VectorDBQAChain.fromLLM(model, vectorStore, {
     k: 2,
     returnSourceDocuments: true,

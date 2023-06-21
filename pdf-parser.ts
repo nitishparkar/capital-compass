@@ -15,7 +15,7 @@ export async function parsePDF(filepath: string): Promise<string> {
   const prompt = await promptA.format({ startupInfo: startupInfo });
   console.log('prompt:\n' + prompt);
 
-  const model = new OpenAI({ modelName: 'gpt-3.5-turbo' });
+  const model = new OpenAI({ modelName: 'gpt-3.5-turbo', temperature: 0.1 });
   const resA = await model.call(prompt);
   console.log(resA);
 
