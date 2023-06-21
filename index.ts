@@ -2,7 +2,7 @@ import express, { Express, Request, Response } from 'express';
 import dotenv from 'dotenv';
 import multer from 'multer';
 import { parsePDF } from './pdf-parser';
-import { testPinecone } from './pinecone';
+import { testPinecone, seedInvestors } from './pinecone';
 
 dotenv.config();
 
@@ -33,6 +33,11 @@ app.post('/upload-deck', upload.single('deck'), async (req: Request, res: Respon
 
 app.get('/pinecone-test', async (req: Request, res: Response) => {
   await testPinecone();
+  res.send('Done');
+});
+
+app.get('/seed-investors', async (req: Request, res: Response) => {
+  await seedInvestors();
   res.send('Done');
 });
 
