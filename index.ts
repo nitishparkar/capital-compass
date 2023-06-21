@@ -2,11 +2,14 @@ import express, { Express, Request, Response } from 'express';
 import dotenv from 'dotenv';
 import multer from 'multer';
 import { parsePDF } from './pdf-parser';
+import { matchInvestor } from './matcher';
 import { testPinecone, seedInvestors } from './pinecone';
 
 dotenv.config();
 
 const app: Express = express();
+app.use(express.json());
+
 const port = process.env.PORT;
 const upload = multer({ dest: 'uploads/' });
 
@@ -28,6 +31,21 @@ app.post('/upload-deck', upload.single('deck'), async (req: Request, res: Respon
       // Handle any errors that occurred during parsing
       console.error(error);
       res.status(500).json({ error: 'Failed to parse PDF' });
+    });
+});
+
+app.post('/match-investors', async (req: Request, res: Response) => {
+  if (!req.body.summary) {
+    return res.status(400).json({ error: 'No summary given' });
+  }
+
+  matchInvestor(req.body.summary)
+    .then((investors) => {
+      res.json({ investors });
+    })
+    .catch((error) => {
+      console.error(error);
+      res.status(500).json({ error: 'Failed find any investors' });
     });
 });
 
