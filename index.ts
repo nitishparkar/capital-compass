@@ -17,6 +17,21 @@ app.get('/', async (req: Request, res: Response) => {
   res.send('Express + TypeScript Nodejs Server');
 });
 
+/*
+{
+  "summary": "UberCab is a luxury on-demand car...",
+  "qna": [
+    {
+      "question": "Question",
+      "answer": "Ans"
+    },
+    {
+      "question": "Another Q",
+      "answer": "Ans"
+    }
+  ]
+}
+*/
 app.post('/upload-deck', upload.single('deck'), async (req: Request, res: Response) => {
   if (!req.file) {
     return res.status(400).json({ error: 'No file uploaded' });
@@ -24,16 +39,32 @@ app.post('/upload-deck', upload.single('deck'), async (req: Request, res: Respon
 
   parsePDF(req.file.path)
     .then((content) => {
-      // Send a response
-      res.json({ message: 'PDF uploaded and parsed successfully', content: content });
+      res.json(content);
     })
     .catch((error) => {
-      // Handle any errors that occurred during parsing
       console.error(error);
       res.status(500).json({ error: 'Failed to parse PDF' });
     });
 });
 
+
+
+/*
+{
+  "investors": [
+    {
+        "name": "Marc Andreessen",
+        "reason_for_matching": "Andreessen's investment focus ...",
+        "compatibility_score": 9
+    },
+    {
+        "name": "Alexis Ohanian",
+        "reason_for_matching": "Ohanian's investment Thesis...",
+        "compatibility_score": 7
+    }
+  ]
+}
+*/
 app.post('/match-investors', async (req: Request, res: Response) => {
   if (!req.body.summary) {
     return res.status(400).json({ error: 'No summary given' });

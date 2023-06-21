@@ -1,26 +1,28 @@
 export const STARTUP_INFO_PARSER_TEMPLATE: string = `
-Read the startup information provided below, which is extracted from its pitch deck and is delimited by '---', and answer the questions that follow. Also, generate a coherent and concise summary of the startup .
+Read the startup information provided below, which is extracted from its pitch deck and is delimited by '---', and answer the questions that follow. Additionally, generate a coherent and concise summary of the startup.
 
 Consider the details provided in the startup information and provide accurate and concise answers to the questions.  If there isn't enough information to answer the question, leave the answer blank.
 
-Provide the response in the following format:
-
-Summary:
-<Summary>
-
-Q&A:
-Question 1: <Question>
-Answer 1:  <Answer> | <blank>
-
-Question 2: <Question>
-Answer 2:  <Answer> | <blank>
+Please provide your response in JSON format as follows:
+{{
+  "summary": "<Summary>",
+  "qna": [
+    {{
+      "question": <Question>,
+      "answer": <Answer> | <blank>
+    }},
+    {{
+      "question": <Question>,
+      "answer": <Answer> | <blank>
+    }},
+  ]
+}}
 
 ---
 {startupInfo}
 ---
 
 Questions:
-
 1. Company name.
 2. Company URL (if any).
 3. Contact information for the founders.
