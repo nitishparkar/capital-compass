@@ -74,10 +74,14 @@ export async function seedInvestors() {
   await pineconeIndex.delete1({ deleteAll: true, namespace });
 
   var investors = JSON.parse(fs.readFileSync('./seed_data/investors.json', 'utf-8'))
+  console.log("investors-----------------");
+  console.log(investors);
+  console.log("------------investors");
+
   const docs = investors.map(function(investor: any) {
     return new Document({
       metadata: { name: investor.name },
-      pageContent: investor,
+      pageContent: JSON.stringify(investor),
     })
   });
 

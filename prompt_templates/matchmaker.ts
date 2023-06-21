@@ -1,9 +1,13 @@
 export const MATCHMAKER_TEMPLATE: string = `
-Based on the provided information about the startup, your task is to order the investors from most suitable to least suitable.
-Startup information:
-{startupInfo}.
+Your task is to analyze the provided startup information and order the investors from most suitable to least suitable based on their compatibility.
 
-Please return a JSON array of investor details, where each investor detail should have the follwing key-value pairs:
+Startup information:
+{startupInfo}
+
+Investors:
+{investors}
+
+Please return a JSON array of investor details, where each investor detail should include the following key-value pairs:
 "name": "<name of the investor>",
 "reason_for_matching": "<reason why this investor is suitable for the startup>",
 "compatibility_score": "<compatibility score on a scale of 1 to 10, with 10 being the most suitable match>"
