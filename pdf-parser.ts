@@ -26,7 +26,11 @@ export async function parsePDF(filepath: string): Promise<string> {
   // });
   // console.log('--------');
 
-  return JSON.parse(resA);
+  let resJSON = JSON.parse(resA);
+  resJSON['info'] = startupInfo;
+  resJSON['need_user_input'] = false
+
+  return resJSON;
 }
 
 async function loadUsingPDFLoader(filepath: string): Promise<Document[]> {

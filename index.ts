@@ -29,7 +29,9 @@ app.get('/', async (req: Request, res: Response) => {
       "question": "Another Q",
       "answer": "Ans"
     }
-  ]
+  ],
+  "info": "parsed pdf content",
+  "need_user_input": false
 }
 */
 app.post('/upload-deck', upload.single('deck'), async (req: Request, res: Response) => {
@@ -66,11 +68,11 @@ app.post('/upload-deck', upload.single('deck'), async (req: Request, res: Respon
 }
 */
 app.post('/match-investors', async (req: Request, res: Response) => {
-  if (!req.body.summary) {
-    return res.status(400).json({ error: 'No summary given' });
+  if (!req.body.info) {
+    return res.status(400).json({ error: 'No info given' });
   }
 
-  matchInvestor(req.body.summary)
+  matchInvestor(req.body.info)
     .then((investors) => {
       res.json({ investors });
     })
