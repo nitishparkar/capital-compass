@@ -32,8 +32,7 @@ export async function matchInvestor(startupInfo: string) {
   console.log('prompt:\n' + prompt);
 
   const resA = await model.call(prompt);
-  console.log('Prompt response:');
-  console.log(resA);
+  let resJSON = JSON.parse(resA);
 
-  return JSON.parse(resA);
+  return resJSON;
 }

@@ -1,8 +1,9 @@
 import express, { Express, Request, Response } from 'express';
 import dotenv from 'dotenv';
 import multer from 'multer';
-import { parsePDF } from './pdf-parser';
+import { parsePDF } from './pdf_parser';
 import { matchInvestor } from './matcher';
+import { composeEmail } from './email_composer';
 import { testPinecone, seedInvestors } from './pinecone';
 
 dotenv.config();
@@ -68,17 +69,36 @@ app.post('/upload-deck', upload.single('deck'), async (req: Request, res: Respon
 }
 */
 app.post('/match-investors', async (req: Request, res: Response) => {
-  if (!req.body.info) {
-    return res.status(400).json({ error: 'No info given' });
+  if (!req.body.startup_info) {
+    return res.status(400).json({ error: 'No startup info given' });
   }
 
-  matchInvestor(req.body.info)
+  matchInvestor(req.body.startup_info)
     .then((investors) => {
       res.json({ investors });
     })
     .catch((error) => {
       console.error(error);
       res.status(500).json({ error: 'Failed find any investors' });
+    });
+});
+
+app.post('/compose-email', async (req: Request, res: Response) => {
+  if (!req.body.startup_info) {
+    return res.status(400).json({ error: 'No company info given' });
+  }
+
+  if (!req.body.investor_info) {
+    return res.status(400).json({ error: 'No Investor info given' });
+  }
+
+  composeEmail(req.body.startup_info, req.body.investor_info)
+    .then((email) => {
+      res.json({ email });
+    })
+    .catch((error) => {
+      console.error(error);
+      res.status(500).json({ error: 'Failed to compose email' });
     });
 });
 
