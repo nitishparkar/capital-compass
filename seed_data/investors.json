@@ -30,5 +30,13 @@
     "investment_size": "Varies, but typically ranges from $25,000 to $250,000",
     "geographical_focus": "Global, with a focus on the United States and Europe",
     "investment_thesis": "Ravikant is known for investing in companies with innovative and disruptive technologies that have the potential to transform industries. He looks for companies with strong leadership teams, a large addressable market, and some sort of unfair advantage. Ravikant has a particular interest in companies that are working on solving big problems, such as those related to healthcare and education. He is also the driving force behind AngelList, a platform that connects startups with investors, and has launched a new program called Spearhead, which aims to transform founders into angel investors."
+  },
+  {
+    "name": "John Doerr",
+    "industry_focus": "Mobile and social networks, greentech innovation, education and economic development",
+    "investment_stage": "Seed, growth-stage",
+    "investment_size": "$25,000 to $12 million",
+    "geographical_focus": "United States",
+    "investment_thesis": "Helping entrepreneurs create the Next Big Thing in mobile and social networks, greentech innovation, education and economic development"
   }
 ]
