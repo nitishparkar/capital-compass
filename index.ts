@@ -90,11 +90,11 @@ app.post('/compose-email', async (req: Request, res: Response) => {
     return res.status(400).json({ error: 'No company info given' });
   }
 
-  if (!req.body.investor_info) {
+  if (!req.body.investor) {
     return res.status(400).json({ error: 'No Investor info given' });
   }
 
-  composeEmail(req.body.startup_info, req.body.investor_info)
+  composeEmail(req.body.startup_info, req.body.investor)
     .then((email) => {
       res.json({ email });
     })
