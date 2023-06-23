@@ -1,6 +1,7 @@
 import express, { Express, Request, Response } from 'express';
 import dotenv from 'dotenv';
 import multer from 'multer';
+import morgan from 'morgan';
 import { parsePDF } from './pdf_parser';
 import { matchInvestor } from './matcher';
 import { composeEmail } from './email_composer';
@@ -9,6 +10,7 @@ import { testPinecone, seedInvestors } from './pinecone';
 dotenv.config();
 
 const app: Express = express();
+app.use(morgan('default'));
 app.use(express.json());
 
 const port = process.env.PORT;
