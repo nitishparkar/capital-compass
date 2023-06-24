@@ -17,7 +17,7 @@ const port = process.env.PORT;
 const upload = multer({ dest: 'uploads/' });
 
 app.get('/', async (req: Request, res: Response) => {
-  res.send('Express + TypeScript Nodejs Server');
+  res.send('Capital Compass API is up.');
 });
 
 /*
@@ -81,17 +81,22 @@ app.post('/match-investors', async (req: Request, res: Response) => {
     })
     .catch((error) => {
       console.error(error);
-      res.status(500).json({ error: 'Failed find any investors' });
+      res.status(500).json({ error: 'Failed to find investors' });
     });
 });
 
+/*
+{
+  "email": "Dear ..."
+}
+*/
 app.post('/compose-email', async (req: Request, res: Response) => {
   if (!req.body.startup_info) {
-    return res.status(400).json({ error: 'No company info given' });
+    return res.status(400).json({ error: 'Missing startup info' });
   }
 
   if (!req.body.investor) {
-    return res.status(400).json({ error: 'No Investor info given' });
+    return res.status(400).json({ error: 'Missing investor info' });
   }
 
   composeEmail(req.body.startup_info, req.body.investor)
@@ -104,16 +109,18 @@ app.post('/compose-email', async (req: Request, res: Response) => {
     });
 });
 
-app.get('/pinecone-test', async (req: Request, res: Response) => {
-  await testPinecone();
-  res.send('Done');
-});
+if (process.env.NODE_ENV !== 'production') {
+  app.get('/pinecone-test', async (req: Request, res: Response) => {
+    await testPinecone();
+    res.send('Done');
+  });
 
-app.get('/seed-investors', async (req: Request, res: Response) => {
-  await seedInvestors();
-  res.send('Done');
-});
+  app.get('/seed-investors', async (req: Request, res: Response) => {
+    await seedInvestors();
+    res.send('Done');
+  });
+}
 
 app.listen(port, () => {
-  console.log(`⚡️[server]: Server is running at http://localhost:${port}`);
+  console.log(`⚡️[server]: Server is running at http://localhost:${port}, in ${process.env.NODE_ENV} env`);
 });
