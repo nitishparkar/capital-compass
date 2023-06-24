@@ -58,11 +58,13 @@ app.post('/upload-deck', upload.single('deck'), async (req: Request, res: Respon
 {
   "investors": [
     {
+        "id": "AoPR8MMJBP54iyyz3sXq",
         "name": "Marc Andreessen",
         "reason_for_matching": "Andreessen's investment focus ...",
         "compatibility_score": 9
     },
     {
+        "id": "LxsvvVYKVV9ZK93bloNm",
         "name": "Alexis Ohanian",
         "reason_for_matching": "Ohanian's investment Thesis...",
         "compatibility_score": 7

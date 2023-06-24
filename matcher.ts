@@ -35,18 +35,17 @@ export async function matchInvestor(startupInfo: string) {
   const resA = await model.call(prompt);
   let resJSON = JSON.parse(resA);
   resJSON.forEach((investor: any) => {
-    investor['info'] = findInfo(results, investor['name']);
+    investor['id'] = findId(results, investor['name']);
   });
 
   return resJSON;
 }
 
-// Till we add investor info in Firebase
-function findInfo(documents: Document[], name: string): string {
+function findId(documents: Document[], name: string): string {
   const document = documents.find(doc => (doc.metadata.name === name))
 
   if (document) {
-    return document.pageContent;
+    return document.metadata.id;
   }
   return '';
 }
