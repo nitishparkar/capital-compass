@@ -14,7 +14,7 @@ Reason the investor is suitable for the startup:
 {investorMatchReason}
 
 
-Please write a concise and compelling email that covers the following elements in a maximum of three paragraphs:
+Please write a concise and compelling email, addressing it to the investor and writing from the point of view of the mutual connection. The email should cover the following elements in a maximum of three paragraphs:
 - What the startup does
 - What sets it apart from existing solutions or competitors
 - A "hook" to get the investor interested in learning more
