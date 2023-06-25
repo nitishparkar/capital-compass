@@ -5,7 +5,7 @@ import morgan from 'morgan';
 import { parsePDF } from './pdf_parser';
 import { matchInvestor } from './matcher';
 import { composeEmail } from './email_composer';
-import { testPinecone, seedInvestors } from './pinecone';
+import { testPinecone } from './pinecone';
 
 dotenv.config();
 
@@ -114,11 +114,6 @@ app.post('/compose-email', async (req: Request, res: Response) => {
 if (process.env.NODE_ENV !== 'production') {
   app.get('/pinecone-test', async (req: Request, res: Response) => {
     await testPinecone();
-    res.send('Done');
-  });
-
-  app.get('/seed-investors', async (req: Request, res: Response) => {
-    await seedInvestors();
     res.send('Done');
   });
 }

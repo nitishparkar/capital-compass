@@ -5,47 +5,52 @@ import { OpenAI } from "langchain/llms/openai";
 import { MATCHMAKER_TEMPLATE } from "./prompt_templates/matchmaker"
 import { PromptTemplate } from "langchain/prompts";
 import { Document } from 'langchain/document';
+import { logPretty, generateLogId } from './utils/logger';
+import { OPEN_AI_COMPLETION, OPEN_AI_EMBEDDINGS } from './configs/open_ai';
+
+const PINECONE_NO_OF_RESULTS = 2
 
 export async function matchInvestor(startupInfo: string) {
+  const logId = generateLogId();
+
   const client = new PineconeClient();
   await client.init({
     apiKey: process.env.PINECONE_API_KEY || '',
     environment: process.env.PINECONE_ENVIRONMENT || '',
   });
   const pineconeIndex = client.Index(process.env.PINECONE_INDEX || '');
-  const namespace = 'dev-namespace';
-
+  const namespace = process.env.PINECONE_NAMESPACE || '';
   const vectorStore = await PineconeStore.fromExistingIndex(
-    new OpenAIEmbeddings({ modelName: 'text-embedding-ada-002' }),
+    new OpenAIEmbeddings(OPEN_AI_EMBEDDINGS),
     { pineconeIndex, namespace }
   );
 
+  const results = await vectorStore.similaritySearch(startupInfo, PINECONE_NO_OF_RESULTS, {});
+  logPretty(logId, 'Pinecone results', JSON.stringify(results));
 
-  const results = await vectorStore.similaritySearch(startupInfo, 2, {});
-  console.log(JSON.stringify(results));
-  results.map(doc => doc.pageContent).forEach((pc) => {
-    console.log(pc);
+  const promptTemplate = new PromptTemplate({ template: MATCHMAKER_TEMPLATE, inputVariables: ['startupInfo', 'investors'] });
+  const prompt = await promptTemplate.format({ startupInfo: startupInfo, investors: results.map(doc => doc.pageContent).join('\n') });
+  logPretty(logId, 'MATCHMAKER_TEMPLATE Prompt', prompt);
+
+  const model = new OpenAI(OPEN_AI_COMPLETION);
+  const modelResponse = await model.call(prompt);
+  logPretty(logId, 'MATCHMAKER_TEMPLATE Prompt Response', modelResponse);
+
+  let res = JSON.parse(modelResponse);
+  res.forEach((investor: any) => {
+    investor['id'] = findIdUsingName(results, investor['name']);
   });
 
-  const model = new OpenAI({ modelName: 'gpt-3.5-turbo', temperature: 0.1 });
-  const promptA = new PromptTemplate({ template: MATCHMAKER_TEMPLATE, inputVariables: ['startupInfo', 'investors'] });
-  const prompt = await promptA.format({ startupInfo: startupInfo, investors: results.map(doc => doc.pageContent).join('\n') });
-  console.log('prompt:\n' + prompt);
-
-  const resA = await model.call(prompt);
-  let resJSON = JSON.parse(resA);
-  resJSON.forEach((investor: any) => {
-    investor['id'] = findId(results, investor['name']);
-  });
-
-  return resJSON;
+  return res;
 }
 
-function findId(documents: Document[], name: string): string {
+function findIdUsingName(documents: Document[], name: string): string {
   const document = documents.find(doc => (doc.metadata.name === name))
 
   if (document) {
     return document.metadata.id;
   }
+
+  console.error(`Could not find id for investor ${name}`)
   return '';
 }
