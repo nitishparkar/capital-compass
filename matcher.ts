@@ -8,7 +8,7 @@ import { Document } from 'langchain/document';
 import { logPretty, generateLogId } from './utils/logger';
 import { OPEN_AI_COMPLETION, OPEN_AI_EMBEDDINGS } from './configs/open_ai';
 
-const PINECONE_NO_OF_RESULTS = 2
+const PINECONE_NO_OF_RESULTS = 4
 
 export async function matchInvestor(startupInfo: string) {
   const logId = generateLogId();

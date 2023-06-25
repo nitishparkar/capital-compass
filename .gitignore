@@ -10,3 +10,6 @@ scripts/firebase-config.json
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+
+# Temporarily added because of some weird issue on my machine
+~
