@@ -1,7 +1,3 @@
-/*
-This needs `firebase-admin` package, which is not part of package.json
-*/
-
 import { PineconeClient } from '@pinecone-database/pinecone';
 import { PineconeStore } from "langchain/vectorstores/pinecone";
 import { OpenAIEmbeddings } from "langchain/embeddings/openai";
