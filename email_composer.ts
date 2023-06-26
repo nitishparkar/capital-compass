@@ -1,8 +1,4 @@
-import { PromptTemplate } from "langchain/prompts";
-import { EMAIL_COMPOSER_TEMPLATE } from "./prompt_templates/email_composer"
-import { OpenAI } from "langchain/llms/openai";
-import { logPretty, generateLogId } from './utils/logger';
-import { OPEN_AI_COMPLETION } from './configs/open_ai';
+import { Humanloop } from "humanloop";
 
 interface Investor {
   name: string;
@@ -11,20 +7,24 @@ interface Investor {
 }
 
 export async function composeEmail(startupInfo: string, investor: Investor): Promise<string> {
-  const logId = generateLogId();
-
-  const promptTemplate = new PromptTemplate({ template: EMAIL_COMPOSER_TEMPLATE, inputVariables: ['startupInfo', 'investorName', 'investorInfo', 'investorMatchReason'] });
-  const prompt = await promptTemplate.format({
-    startupInfo: startupInfo,
-    investorName: investor.name,
-    investorInfo: investor.info,
-    investorMatchReason: investor.reason_for_matching,
+  const humanloop = new Humanloop({
+    apiKey: process.env.HUMANLOOP_API_KEY,
   });
-  logPretty(logId, 'EMAIL_COMPOSER_TEMPLATE Prompt', prompt);
 
-  const model = new OpenAI(OPEN_AI_COMPLETION);
-  const modelResponse = await model.call(prompt);
-  logPretty(logId, 'EMAIL_COMPOSER_TEMPLATE Prompt Response', modelResponse);
+  // This throws an error on failure
+  const response = await humanloop.completeDeployed({
+    project: "Capital Compass",
+    inputs: {
+      "startupInfo": startupInfo,
+      "investorName": investor.name,
+      "investorInfo": investor.info,
+      "investorMatchReason": investor.reason_for_matching
+    },
+    provider_api_keys: {
+      "openai": process.env.OPENAI_API_KEY
+    }
+  });
+  console.log(response.data);
 
-  return modelResponse;
+  return response.data.data[0].output;
 }
