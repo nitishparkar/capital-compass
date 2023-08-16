@@ -6,6 +6,7 @@ import { parsePDF } from './pdf_parser';
 import { matchInvestor } from './matcher';
 import { composeEmail } from './email_composer';
 import { testPinecone } from './pinecone';
+import { testStreaming } from './openai';
 
 dotenv.config();
 
@@ -115,6 +116,11 @@ if (process.env.NODE_ENV !== 'production') {
   app.get('/pinecone-test', async (req: Request, res: Response) => {
     await testPinecone();
     res.send('Done');
+  });
+
+  app.get('/streaming-test', async (req: Request, res: Response) => {
+    await testStreaming(res);
+    res.end();
   });
 }
 
