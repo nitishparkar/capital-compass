@@ -7,6 +7,8 @@ import { matchInvestor } from './matcher';
 import { composeEmail } from './email_composer';
 import { testPinecone } from './pinecone';
 import { testStreaming } from './openai';
+import { testFirebase } from './firebase';
+import { initializeApp, cert } from 'firebase-admin/app';
 
 dotenv.config();
 
@@ -16,6 +18,11 @@ app.use(express.json());
 
 const port = process.env.PORT;
 const upload = multer({ dest: 'uploads/' });
+
+const serviceAccount = require('../keys.json');
+initializeApp({
+  credential: cert(serviceAccount)
+});
 
 app.get('/', async (req: Request, res: Response) => {
   res.send('Capital Compass API is up.');
@@ -120,6 +127,11 @@ if (process.env.NODE_ENV !== 'production') {
 
   app.get('/streaming-test', async (req: Request, res: Response) => {
     await testStreaming(res);
+    res.end();
+  });
+
+  app.get('/firebase-test', async (req: Request, res: Response) => {
+    await testFirebase();
     res.end();
   });
 }
