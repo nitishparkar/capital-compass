@@ -2,7 +2,7 @@ import express, { Express, Request, Response } from 'express';
 import dotenv from 'dotenv';
 import multer from 'multer';
 import morgan from 'morgan';
-import { parsePDF } from './pdf_parser';
+import { parsePDF, getQnaFromPDF } from './pdf_parser';
 import { matchInvestor } from './matcher';
 import { composeEmail } from './email_composer';
 import { testPinecone } from './pinecone';
@@ -60,6 +60,24 @@ app.post('/upload-deck', upload.single('deck'), async (req: Request, res: Respon
     });
 });
 
+
+app.post('/generate-qnas', upload.single('deck'), async (req: Request, res: Response) => {
+  if (!req.file) {
+    return res.status(400).json({ error: 'No file uploaded' });
+  }
+
+  if (!req.query.attemptId) {
+    return res.status(400).json({ error: 'Missing Attempt ID' });
+  }
+
+  getQnaFromPDF(req.file.path, req.query.attemptId as string)
+    .then((content) => {
+      res.send('Done');
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+});
 
 
 /*
