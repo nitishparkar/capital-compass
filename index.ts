@@ -4,7 +4,7 @@ import multer from 'multer';
 import morgan from 'morgan';
 import { parsePDF, getQnaFromPDF } from './pdf_parser';
 import { matchInvestor } from './matcher';
-import { composeEmail } from './email_composer';
+import { composeEmail, composeEmailStream } from './email_composer';
 import { testPinecone } from './pinecone';
 import { testStreaming } from './openai';
 import { testFirebase } from './firebase';
@@ -130,6 +130,25 @@ app.post('/compose-email', async (req: Request, res: Response) => {
   composeEmail(req.body.startup_info, req.body.investor)
     .then((email) => {
       res.json({ email });
+    })
+    .catch((error) => {
+      console.error(error);
+      res.status(500).json({ error: 'Failed to compose email' });
+    });
+});
+
+app.post('/compose-email-stream', async (req: Request, res: Response) => {
+  if (!req.body.startup_info) {
+    return res.status(400).json({ error: 'Missing startup info' });
+  }
+
+  if (!req.body.investor) {
+    return res.status(400).json({ error: 'Missing investor info' });
+  }
+
+  composeEmailStream(req.body.startup_info, req.body.investor, res)
+    .then(() => {
+      res.end();
     })
     .catch((error) => {
       console.error(error);
