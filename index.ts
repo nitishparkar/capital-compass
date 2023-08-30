@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 import multer from 'multer';
 import morgan from 'morgan';
 import { parsePDF, getQnaFromPDF } from './pdf_parser';
-import { matchInvestor } from './matcher';
+import { matchInvestor, findInvestors } from './matcher';
 import { composeEmail, composeEmailStream } from './email_composer';
 import { testPinecone } from './pinecone';
 import { testStreaming } from './openai';
@@ -104,6 +104,22 @@ app.post('/match-investors', async (req: Request, res: Response) => {
   }
 
   matchInvestor(req.body.startup_info)
+    .then((investors) => {
+      res.json({ investors });
+    })
+    .catch((error) => {
+      console.error(error);
+      res.status(500).json({ error: 'Failed to find investors' });
+    });
+});
+
+
+app.post('/find-investors', async (req: Request, res: Response) => {
+  if (!req.body.attemptId) {
+    return res.status(400).json({ error: 'No attemptId given' });
+  }
+
+  findInvestors(req.body.attemptId)
     .then((investors) => {
       res.json({ investors });
     })
