@@ -155,10 +155,12 @@ app.post('/compose-email', async (req: Request, res: Response) => {
 
 app.post('/compose-email-stream', async (req: Request, res: Response) => {
   if (!req.body.startup_info) {
+    console.error('Missing startup info', req.body);
     return res.status(400).json({ error: 'Missing startup info' });
   }
 
   if (!req.body.investor) {
+    console.error('Missing investor info', req.body);
     return res.status(400).json({ error: 'Missing investor info' });
   }
 
