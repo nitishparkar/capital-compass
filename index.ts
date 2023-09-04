@@ -66,11 +66,11 @@ app.post('/generate-qnas', upload.single('deck'), async (req: Request, res: Resp
     return res.status(400).json({ error: 'No file uploaded' });
   }
 
-  if (!req.query.attemptId) {
-    return res.status(400).json({ error: 'Missing Attempt ID' });
+  if (!req.body.startupProfileId) {
+    return res.status(400).json({ error: 'Missing Startup Profile ID' });
   }
 
-  getQnaFromPDF(req.file.path, req.query.attemptId as string)
+  getQnaFromPDF(req.file.path, req.body.startupProfileId as string)
     .then((content) => {
       res.send('Done');
     })
@@ -115,11 +115,11 @@ app.post('/match-investors', async (req: Request, res: Response) => {
 
 
 app.post('/find-investors', async (req: Request, res: Response) => {
-  if (!req.body.attemptId) {
-    return res.status(400).json({ error: 'No attemptId given' });
+  if (!req.body.startupProfileId) {
+    return res.status(400).json({ error: 'No Startup Profile ID given' });
   }
 
-  findInvestors(req.body.attemptId)
+  findInvestors(req.body.startupProfileId)
     .then((investors) => {
       res.json({ investors });
     })

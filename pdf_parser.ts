@@ -8,6 +8,7 @@ import { logPretty, generateLogId } from './utils/logger'
 import { OPEN_AI_COMPLETION } from './configs/open_ai';
 import OpenAI from 'openai';
 import { getFirestore } from 'firebase-admin/firestore';
+import { getStorage } from 'firebase-admin/storage';
 
 export async function parsePDF(filepath: string): Promise<string> {
   const logId = generateLogId();
@@ -30,11 +31,12 @@ export async function parsePDF(filepath: string): Promise<string> {
   return res;
 }
 
-export async function getQnaFromPDF(filepath: string, attemptId: string) {
+export async function getQnaFromPDF(filepath: string, startupProfileId: string) {
   const logId = generateLogId();
 
   const documents = await loadPDF(filepath);
   const startupInfo = documents.map(doc => doc.pageContent).join('\n\n');
+  await storeDeckInFirebase(filepath, startupProfileId, startupInfo);
 
   const promptTemplate = new PromptTemplate({ template: QNA_GENERATOR_TEMPLATE, inputVariables: ['startupInfo'] });
   const prompt = await promptTemplate.format({ startupInfo });
@@ -50,7 +52,7 @@ export async function getQnaFromPDF(filepath: string, attemptId: string) {
     messages: [{ "role": "system", "content": "You are a helpful assistant." }, { role: "user", content: prompt }],
   });
 
-  logPretty(logId, 'Attempt ID:', attemptId);
+  logPretty(logId, 'Startup Profile ID:', startupProfileId);
 
   let data = ''; // To accumulate the chunks of response data
   const firebaseCallPromises = []; // To store promises of Firebase calls
@@ -69,7 +71,7 @@ export async function getQnaFromPDF(filepath: string, attemptId: string) {
         const parsedObject = JSON.parse(jsonObject);
         logPretty(logId, 'parsedObject', parsedObject);
 
-        const firebaseCallPromise = storeInFirebase(attemptId, parsedObject);
+        const firebaseCallPromise = storeInFirebase(startupProfileId, parsedObject);
         firebaseCallPromises.push(firebaseCallPromise);
       } catch (err) {
         logPretty(logId, 'erraneous JSON', jsonObject);
@@ -88,13 +90,33 @@ async function loadPDF(filepath: string): Promise<Document[]> {
   return await loader.load();
 }
 
-async function storeInFirebase(attemptId: string, parsedObject: any) {
+async function storeInFirebase(startupProfileId: string, parsedObject: any) {
   return new Promise((resolve, reject) => {
     const db = getFirestore();
 
-    parsedObject['attemptId'] = attemptId
+    parsedObject['startupProfile'] = db.doc(`startupProfile/${startupProfileId}`);
     const res = db.collection('qnas').doc().set(parsedObject);
 
     resolve(res);
   });
+}
+
+
+async function storeDeckInFirebase(filepath: string, startupProfileId: string, deckText: string) {
+
+  // Upload to Firebase storage
+  const storage = getStorage();
+  const filename = filepath.split('/').slice(-1).pop();
+  const metadata = {
+    contentType: 'application/pdf',
+    destination: `decks/${filename}`
+  };
+  const bucket = storage.bucket('capitalcompass-9a9a7.appspot.com');
+  const uploadResponse = await bucket.upload(`${filepath}`, metadata);
+  const firebasePath = uploadResponse[0].name;
+
+
+  // Store info in Firebase DB
+  const db = getFirestore();
+  const res = await db.collection('decks').doc().set({ deckPath: firebasePath, deckText: deckText, startupProfile: db.doc(`startupProfile/${startupProfileId}`) });
 }

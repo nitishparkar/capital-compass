@@ -45,12 +45,13 @@ export async function matchInvestor(startupInfo: string) {
   return res;
 }
 
-export async function findInvestors(attemptId: string) {
+export async function findInvestors(startupProfileId: string) {
   let startupInfo: string = "";
 
   const db = getFirestore();
+  const startupProfileDocRef = db.collection('startupProfile').doc(startupProfileId);
   const qnasRef = db.collection('qnas');
-  const qnas = await qnasRef.where('attemptId', '==', attemptId).get();
+  const qnas = await qnasRef.where('startupProfile', '==', startupProfileDocRef).get();
 
   qnas.forEach((qnaDoc) => {
     const qnaData = qnaDoc.data();
