@@ -7,7 +7,7 @@ import { matchInvestor, findInvestors } from './matcher';
 import { composeEmail, composeEmailStream } from './email_composer';
 import { testPinecone } from './pinecone';
 import { testStreaming } from './openai';
-import { testFirebase } from './firebase';
+import { testFirebase, testFirestore } from './firebase';
 import { initializeApp, cert } from 'firebase-admin/app';
 
 dotenv.config();
@@ -188,6 +188,15 @@ if (process.env.NODE_ENV !== 'production') {
   app.get('/firebase-test', async (req: Request, res: Response) => {
     await testFirebase();
     res.end();
+  });
+
+  app.post('/firestore-test', upload.single('deck'), async (req: Request, res: Response) => {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    await testFirestore(req.file.path);
+    res.send('Done');
   });
 }
 
