@@ -5,6 +5,7 @@ import { logPretty, generateLogId } from './utils/logger';
 import { OPEN_AI_COMPLETION } from './configs/open_ai';
 import OpenAI from 'openai';
 import { Response } from 'express';
+import { getFirestore } from 'firebase-admin/firestore';
 
 interface Investor {
   name: string;
@@ -29,6 +30,25 @@ export async function composeEmail(startupInfo: string, investor: Investor): Pro
   logPretty(logId, 'EMAIL_COMPOSER_TEMPLATE Prompt Response', modelResponse);
 
   return modelResponse;
+}
+
+export async function composeEmailFromQnas(startupProfileId: string, investor: Investor): Promise<string> {
+  let startupInfo: string = "";
+
+  const db = getFirestore();
+  const startupProfileDocRef = db.collection('startupProfile').doc(startupProfileId);
+  const qnasRef = db.collection('qnas');
+  const qnas = await qnasRef.where('startupProfile', '==', startupProfileDocRef).get();
+
+  qnas.forEach((qnaDoc) => {
+    const qnaData = qnaDoc.data();
+    const question = qnaData.question;
+    const answer = qnaData.answer;
+
+    startupInfo += `Question: ${question}\nAnswer: ${answer}\n\n`;
+  });
+
+  return composeEmail(startupInfo, investor);
 }
 
 export async function composeEmailStream(startupInfo: string, investor: Investor, res: Response) {
