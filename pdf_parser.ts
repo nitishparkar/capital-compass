@@ -95,6 +95,9 @@ async function storeInFirebase(startupProfileId: string, parsedObject: any) {
     const db = getFirestore();
 
     parsedObject['startupProfile'] = db.doc(`startupProfile/${startupProfileId}`);
+    parsedObject['startupProfileId'] = startupProfileId; // This is because you can't yet query using a reference field from Firebase console.
+    parsedObject['createdAt'] = new Date();
+    parsedObject['updatedAt'] = new Date();
     const res = db.collection('qnas').doc().set(parsedObject);
 
     resolve(res);
@@ -118,5 +121,12 @@ async function storeDeckInFirebase(filepath: string, startupProfileId: string, d
 
   // Store info in Firebase DB
   const db = getFirestore();
-  const res = await db.collection('decks').doc().set({ deckPath: firebasePath, deckText: deckText, startupProfile: db.doc(`startupProfile/${startupProfileId}`) });
+  const res = await db.collection('decks').doc().set({
+    filePath: firebasePath,
+    textContent: deckText,
+    startupProfile: db.doc(`startupProfile/${startupProfileId}`),
+    startupProfileId: startupProfileId, // This is because you can't yet query using a reference field from Firebase console.
+    createdAt: new Date(),
+    updatedAt: new Date()
+  });
 }
