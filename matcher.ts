@@ -7,6 +7,7 @@ import { PromptTemplate } from "langchain/prompts";
 import { Document } from 'langchain/document';
 import { logPretty, generateLogId } from './utils/logger';
 import { OPEN_AI_COMPLETION, OPEN_AI_EMBEDDINGS } from './configs/open_ai';
+import { getFirestore } from 'firebase-admin/firestore';
 
 const PINECONE_NO_OF_RESULTS = 4
 
@@ -42,6 +43,25 @@ export async function matchInvestor(startupInfo: string) {
   });
 
   return res;
+}
+
+export async function findInvestors(startupProfileId: string) {
+  let startupInfo: string = "";
+
+  const db = getFirestore();
+  const startupProfileDocRef = db.collection('startupProfile').doc(startupProfileId);
+  const qnasRef = db.collection('qnas');
+  const qnas = await qnasRef.where('startupProfile', '==', startupProfileDocRef).get();
+
+  qnas.forEach((qnaDoc) => {
+    const qnaData = qnaDoc.data();
+    const question = qnaData.question;
+    const answer = qnaData.answer;
+
+    startupInfo += `Question: ${question}\nAnswer: ${answer}\n\n`;
+  });
+
+  return matchInvestor(startupInfo);
 }
 
 function findIdUsingName(documents: Document[], name: string): string {

@@ -2,10 +2,13 @@ import express, { Express, Request, Response } from 'express';
 import dotenv from 'dotenv';
 import multer from 'multer';
 import morgan from 'morgan';
-import { parsePDF } from './pdf_parser';
-import { matchInvestor } from './matcher';
-import { composeEmail } from './email_composer';
+import { parsePDF, getQnaFromPDF } from './pdf_parser';
+import { matchInvestor, findInvestors } from './matcher';
+import { composeEmail, composeEmailFromQnas, composeEmailStream } from './email_composer';
 import { testPinecone } from './pinecone';
+import { testStreaming } from './openai';
+import { testFirebase, testFirestore } from './firebase';
+import { initializeApp, cert } from 'firebase-admin/app';
 
 dotenv.config();
 
@@ -15,6 +18,11 @@ app.use(express.json());
 
 const port = process.env.PORT;
 const upload = multer({ dest: 'uploads/' });
+
+const serviceAccount = require('../keys.json');
+initializeApp({
+  credential: cert(serviceAccount)
+});
 
 app.get('/', async (req: Request, res: Response) => {
   res.send('Capital Compass API is up.');
@@ -53,6 +61,24 @@ app.post('/upload-deck', upload.single('deck'), async (req: Request, res: Respon
 });
 
 
+app.post('/generate-qnas', upload.single('deck'), async (req: Request, res: Response) => {
+  if (!req.file) {
+    return res.status(400).json({ error: 'No file uploaded' });
+  }
+
+  if (!req.body.startupProfileId) {
+    return res.status(400).json({ error: 'Missing Startup Profile ID' });
+  }
+
+  getQnaFromPDF(req.file.path, req.body.startupProfileId as string)
+    .then((content) => {
+      res.send('Done');
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+});
+
 
 /*
 {
@@ -87,6 +113,22 @@ app.post('/match-investors', async (req: Request, res: Response) => {
     });
 });
 
+
+app.post('/find-investors', async (req: Request, res: Response) => {
+  if (!req.body.startupProfileId) {
+    return res.status(400).json({ error: 'No Startup Profile ID given' });
+  }
+
+  findInvestors(req.body.startupProfileId)
+    .then((investors) => {
+      res.json({ investors });
+    })
+    .catch((error) => {
+      console.error(error);
+      res.status(500).json({ error: 'Failed to find investors' });
+    });
+});
+
 /*
 {
   "email": "Dear ..."
@@ -111,9 +153,68 @@ app.post('/compose-email', async (req: Request, res: Response) => {
     });
 });
 
+app.post('/compose-email-from-qnas', async (req: Request, res: Response) => {
+  if (!req.body.startupProfileId) {
+    return res.status(400).json({ error: 'Missing startup info' });
+  }
+
+  if (!req.body.investor) {
+    return res.status(400).json({ error: 'Missing investor info' });
+  }
+
+  composeEmailFromQnas(req.body.startupProfileId, req.body.investor)
+    .then((email) => {
+      res.json({ email });
+    })
+    .catch((error) => {
+      console.error(error);
+      res.status(500).json({ error: 'Failed to compose email' });
+    });
+});
+
+app.post('/compose-email-stream', async (req: Request, res: Response) => {
+  if (!req.body.startup_info) {
+    console.error('Missing startup info', req.body);
+    return res.status(400).json({ error: 'Missing startup info' });
+  }
+
+  if (!req.body.investor) {
+    console.error('Missing investor info', req.body);
+    return res.status(400).json({ error: 'Missing investor info' });
+  }
+
+  composeEmailStream(req.body.startup_info, req.body.investor, res)
+    .then(() => {
+      res.end();
+    })
+    .catch((error) => {
+      console.error(error);
+      res.status(500).json({ error: 'Failed to compose email' });
+    });
+});
+
 if (process.env.NODE_ENV !== 'production') {
   app.get('/pinecone-test', async (req: Request, res: Response) => {
     await testPinecone();
+    res.send('Done');
+  });
+
+  app.get('/streaming-test', async (req: Request, res: Response) => {
+    await testStreaming(res);
+    res.end();
+  });
+
+  app.get('/firebase-test', async (req: Request, res: Response) => {
+    await testFirebase();
+    res.end();
+  });
+
+  app.post('/firestore-test', upload.single('deck'), async (req: Request, res: Response) => {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    await testFirestore(req.file.path);
     res.send('Done');
   });
 }

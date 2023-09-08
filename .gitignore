@@ -13,3 +13,5 @@ scripts/firebase-config.json
 
 # Temporarily added because of some weird issue on my machine
 ~
+
+keys.json
